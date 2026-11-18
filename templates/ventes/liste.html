@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Historique des ventes{% endblock %}
+{% block page_pretitle %}Ventes & Caisse{% endblock %}
+{% block page_title %}Historique des ventes{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'ventes:caisse' %}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+    <i class="bi bi-cash-register"></i> Ouvrir la caisse
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card pg-card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Numéro de vente ou client...">
+            </div>
+            <div class="col-md-4">
+                <select name="statut" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    {% for code, label in statuts %}
+                    <option value="{{ code }}" {% if statut == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary">Filtrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card pg-card">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table pg-table">
+            <thead>
+                <tr><th>Numéro</th><th>Date</th><th>Client</th><th>Caissier</th><th>Total</th><th>Statut</th><th class="text-end">Action</th></tr>
+            </thead>
+            <tbody>
+                {% for v in page_obj %}
+                <tr>
+                    <td class="fw-semibold">{{ v.numero }}</td>
+                    <td>{{ v.date_vente|date:"d/m/Y H:i" }}</td>
+                    <td>{{ v.client.nom|default:"Comptoir anonyme" }}</td>
+                    <td>{{ v.utilisateur.username }}</td>
+                    <td class="fw-bold">{{ v.montant_total|floatformat:0 }} Ar</td>
+                    <td><span class="badge bg-success-lt text-success">{{ v.get_statut_display }}</span></td>
+                    <td class="text-end">
+                        <a href="{% url 'ventes:vente_detail' v.pk %}" class="btn btn-sm btn-outline-primary">Détails</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-5 text-secondary">Aucune vente enregistrée.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

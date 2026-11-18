@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Ajustement d'inventaire{% endblock %}
+{% block page_pretitle %}Stocks & Lots{% endblock %}
+{% block page_title %}Inventaire — Lot {{ lot.numero_lot }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card pg-card">
+            <div class="card-body p-4">
+                <div class="mb-3 pb-3 border-bottom">
+                    <div class="text-secondary small">Médicament</div>
+                    <div class="fs-3 fw-bold">{{ lot.medicament.nom_commercial }}</div>
+                    <div class="text-secondary small">Quantité système actuelle : <strong>{{ lot.quantite_disponible }}</strong></div>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_nouvelle_quantite" class="form-label fw-medium">Nouvelle quantité physique constatée</label>
+                        <input type="number" name="nouvelle_quantite" id="id_nouvelle_quantite" min="0" value="{{ lot.quantite_disponible }}" class="form-control" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="id_motif" class="form-label fw-medium">Motif de l'ajustement</label>
+                        <input type="text" name="motif" id="id_motif" class="form-control" placeholder="Ex : Inventaire mensuel, casse constatée..." required>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'stock:stock_list' %}" class="btn btn-outline-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-primary">Valider l'ajustement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

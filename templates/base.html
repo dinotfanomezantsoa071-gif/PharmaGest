@@ -1,0 +1,90 @@
+{% load static %}
+<!doctype html>
+<html lang="fr" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        try {
+            const theme = localStorage.getItem('pharmagest-theme');
+            if (theme === 'dark' || theme === 'light') {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+            }
+        } catch {
+            // The default light theme remains available when browser storage is disabled.
+        }
+    </script>
+    <title>{% block title %}PharmaGest{% endblock %} — Gestion Pharmaceutique</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{% static 'css/pharmagest.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="page">
+        {% include 'includes/sidebar.html' %}
+
+        <div class="page-wrapper">
+            {% include 'includes/navbar.html' %}
+
+            <div class="page-header d-print-none pt-3">
+                <div class="container-xl">
+                    <div class="row g-2 align-items-center">
+                        <div class="col">
+                            <div class="page-pretitle text-muted">{% block page_pretitle %}PharmaGest{% endblock %}</div>
+                            <h2 class="page-title fw-bold">{% block page_title %}Tableau de bord{% endblock %}</h2>
+                        </div>
+                        <div class="col-auto ms-auto d-print-none">
+                            {% block page_actions %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <main class="page-body">
+                <div class="container-xl">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+
+            {% include 'includes/footer.html' %}
+        </div>
+    </div>
+
+    {% include 'includes/messages.html' %}
+
+    <!-- Modale globale de confirmation -->
+    <div class="modal modal-blur fade" id="pgConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content pg-card">
+                <div class="modal-body text-center py-4">
+                    <div class="pg-kpi-icon bg-danger-lt text-danger mb-3 mx-auto">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <h3 id="pgConfirmModalTitle" class="mb-1">Confirmer l'action</h3>
+                    <p id="pgConfirmModalMessage" class="text-secondary small mb-0">Cette opération est soumise à validation.</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <div class="w-100 d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary w-50" data-bs-dismiss="modal">Annuler</button>
+                        <form id="pgConfirmModalForm" method="post" action="#" class="w-50">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100">Confirmer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="{% static 'js/pharmagest.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,59 @@
+<header class="navbar navbar-expand-md d-none d-lg-flex d-print-none pg-navbar sticky-top">
+    <div class="container-xl">
+        <div class="navbar-nav flex-row align-items-center w-100">
+            <form action="{% url 'medicaments:medicament_list' %}" method="get" class="d-flex flex-grow-1 me-4" style="max-width: 420px;">
+                <div class="input-icon w-100">
+                    <span class="input-icon-addon"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control form-control-sm" placeholder="Rechercher un médicament, code-barres, lot...">
+                </div>
+            </form>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <button type="button" id="pg-theme-toggle" class="btn btn-icon btn-ghost-secondary" title="Changer de thème">
+                    <i id="pg-theme-icon" class="bi bi-moon-stars"></i>
+                </button>
+
+                <div class="nav-item dropdown">
+                    <a href="#" class="btn btn-icon btn-ghost-secondary position-relative" data-bs-toggle="dropdown" aria-label="Notifications">
+                        <i class="bi bi-bell"></i>
+                        <span class="badge bg-danger badge-pill badge-notification">0</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-card" style="width: 300px;">
+                        <div class="card border-0">
+                            <div class="card-header py-2">
+                                <h3 class="card-title fs-5">Alertes système</h3>
+                            </div>
+                            <div class="card-body py-3 text-center text-secondary small">
+                                Aucune alerte critique pour le moment.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-item dropdown ps-2">
+                    <a href="#" class="nav-link d-flex lh-1 text-reset p-0 align-items-center gap-2" data-bs-toggle="dropdown">
+                        <span class="avatar avatar-sm rounded-circle bg-primary-lt text-primary fw-bold">
+                            {% if request.user.is_authenticated %}
+                                {{ request.user.username|slice:":2"|upper }}
+                            {% else %}
+                                PG
+                            {% endif %}
+                        </span>
+                        <div class="d-none d-xl-block">
+                            <div class="fw-semibold small">
+                                {% if request.user.is_authenticated %}{{ request.user.username }}{% else %}Session invité{% endif %}
+                            </div>
+                            <div class="text-muted" style="font-size: 0.72rem;">Pharmacie centrale</div>
+                        </div>
+                        <i class="bi bi-chevron-down small text-muted"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                        <a href="{% url 'password_change' %}" class="dropdown-item"><i class="bi bi-key me-2"></i>Changer le mot de passe</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'logout' %}" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Déconnexion</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

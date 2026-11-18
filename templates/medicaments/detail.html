@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ medicament.nom_commercial }}{% endblock %}
+{% block page_pretitle %}Fiche médicament{% endblock %}
+{% block page_title %}{{ medicament.nom_commercial }}{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'medicaments:medicament_update' medicament.pk %}" class="btn btn-primary">
+    <i class="bi bi-pencil me-1"></i> Modifier
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card pg-card text-center p-4">
+            {% if medicament.photo %}
+            <img src="{{ medicament.photo.url }}" alt="{{ medicament.nom_commercial }}" class="img-fluid rounded mb-3" style="max-height: 220px; object-fit: cover;">
+            {% else %}
+            <div class="pg-kpi-icon bg-primary-lt text-primary mx-auto mb-3" style="width:80px;height:80px;font-size:2.2rem;">
+                <i class="bi bi-capsule"></i>
+            </div>
+            {% endif %}
+            <h3 class="mb-1">{{ medicament.nom_commercial }}</h3>
+            <p class="text-secondary small mb-3">{{ medicament.denomination_generique|default:"DCI non renseignée" }}</p>
+            <div class="d-flex justify-content-center gap-2">
+                <span class="badge bg-primary-lt text-primary">{{ medicament.categorie.nom }}</span>
+                <span class="badge bg-secondary-lt text-secondary">{{ medicament.forme_pharmaceutique }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card pg-card mb-4">
+            <div class="card-header"><h3 class="card-title">Informations générales</h3></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6"><span class="text-secondary small d-block">Dosage</span><strong>{{ medicament.dosage }}</strong></div>
+                    <div class="col-sm-6"><span class="text-secondary small d-block">Laboratoire</span><strong>{{ medicament.laboratoire|default:"—" }}</strong></div>
+                    <div class="col-sm-6"><span class="text-secondary small d-block">Code-barres</span><strong>{{ medicament.code_barres|default:"—" }}</strong></div>
+                    <div class="col-sm-6"><span class="text-secondary small d-block">Seuil d'alerte</span><strong>{{ medicament.seuil_alerte }} unités</strong></div>
+                    <div class="col-sm-6"><span class="text-secondary small d-block">Prix d'achat</span><strong>{{ medicament.prix_achat|floatformat:0 }} Ar</strong></div>
+                    <div class="col-sm-6"><span class="text-secondary small d-block">Prix de vente</span><strong class="text-primary">{{ medicament.prix_vente|floatformat:0 }} Ar</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card pg-card">
+            <div class="card-header"><h3 class="card-title">Lots enregistrés (ordre FEFO)</h3></div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table pg-table">
+                    <thead>
+                        <tr><th>Numéro de lot</th><th>Péremption</th><th>Disponible</th><th>État</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for lot in lots %}
+                        <tr>
+                            <td class="fw-medium">{{ lot.numero_lot }}</td>
+                            <td>{{ lot.date_peremption|date:"d/m/Y" }}</td>
+                            <td>{{ lot.quantite_disponible }}</td>
+                            <td>
+                                {% if lot.est_perime %}
+                                <span class="badge bg-danger-lt text-danger">Périmé</span>
+                                {% elif lot.bloque %}
+                                <span class="badge bg-warning-lt text-warning">Bloqué</span>
+                                {% else %}
+                                <span class="badge bg-success-lt text-success">Délivrable</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-secondary py-4">Aucun lot en stock pour ce médicament.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

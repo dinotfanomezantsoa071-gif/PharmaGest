@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titre }}{% endblock %}
+{% block page_pretitle %}Approvisionnement / Fournisseurs{% endblock %}
+{% block page_title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="card pg-card">
+    <div class="card-body p-4">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row g-3">
+                {% for field in form %}
+                <div class="{% if field.name == 'actif' %}col-12{% else %}col-md-6{% endif %}">
+                    {% if field.name == 'actif' %}
+                    <label class="form-check form-switch mt-2">
+                        {{ field }}
+                        <span class="form-check-label fw-medium">{{ field.label }}</span>
+                    </label>
+                    {% else %}
+                    <label for="{{ field.id_for_label }}" class="form-label fw-medium">{{ field.label }}</label>
+                    {{ field }}
+                    {% endif %}
+                    {% if field.errors %}
+                    <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="{% url 'fournisseurs:fournisseur_list' %}" class="btn btn-outline-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

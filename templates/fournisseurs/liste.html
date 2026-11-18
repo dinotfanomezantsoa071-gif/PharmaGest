@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Fournisseurs{% endblock %}
+{% block page_pretitle %}Approvisionnement{% endblock %}
+{% block page_title %}Fournisseurs{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'fournisseurs:fournisseur_create' %}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+    <i class="bi bi-plus-lg"></i> Nouveau fournisseur
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card pg-card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-icon">
+                    <span class="input-icon-addon"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Raison sociale ou téléphone...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="statut" class="form-select">
+                    <option value="ACTIFS" {% if statut == 'ACTIFS' %}selected{% endif %}>Actifs</option>
+                    <option value="INACTIFS" {% if statut == 'INACTIFS' %}selected{% endif %}>Inactifs</option>
+                    <option value="TOUS" {% if statut == 'TOUS' %}selected{% endif %}>Tous</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary">Filtrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card pg-card">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table pg-table">
+            <thead>
+                <tr>
+                    <th>Raison sociale</th>
+                    <th>Téléphone</th>
+                    <th>Contact principal</th>
+                    <th>NIF / STAT</th>
+                    <th>Statut</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in page_obj %}
+                <tr>
+                    <td><a href="{% url 'fournisseurs:fournisseur_detail' f.pk %}" class="fw-semibold text-reset text-decoration-none">{{ f.raison_sociale }}</a></td>
+                    <td>{{ f.telephone }}</td>
+                    <td>{{ f.contact_principal|default:"—" }}</td>
+                    <td>{{ f.numero_fiscal|default:"—" }}</td>
+                    <td>
+                        {% if f.actif %}
+                        <span class="badge bg-success-lt text-success">Actif</span>
+                        {% else %}
+                        <span class="badge bg-secondary-lt text-secondary">Inactif</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-list justify-content-end flex-nowrap">
+                            <a href="{% url 'fournisseurs:fournisseur_detail' f.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'fournisseurs:fournisseur_update' f.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                            <button type="button" class="btn btn-sm btn-outline-warning"
+                                data-bs-toggle="modal" data-bs-target="#pgConfirmModal"
+                                data-confirm-title="Changer le statut"
+                                data-confirm-message="Confirmer la modification du statut de « {{ f.raison_sociale }} » ?"
+                                data-confirm-url="{% url 'fournisseurs:fournisseur_toggle_actif' f.pk %}">
+                                <i class="bi bi-power"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-5 text-secondary">Aucun fournisseur enregistré.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

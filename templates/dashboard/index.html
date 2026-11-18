@@ -1,0 +1,572 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord{% endblock %}
+{% block page_pretitle %}Vue d'ensemble{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block page_actions %}
+<div class="btn-list">
+    {% if can_view_sales %}
+    <a href="{% url 'ventes_pdf' %}" class="btn btn-outline-secondary d-none d-sm-inline-flex align-items-center gap-2">
+        <i class="bi bi-file-earmark-pdf"></i> Rapport ventes
+    </a>
+    <a href="{% url 'ventes:caisse' %}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+        <i class="bi bi-plus-lg"></i> Nouvelle vente
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="pg-dashboard-hero mb-4">
+    <div class="pg-dashboard-hero-content">
+        <span class="pg-dashboard-eyebrow"><i class="bi bi-heart-pulse me-2"></i>Votre officine en un coup d'œil</span>
+        <h2 class="pg-dashboard-hero-title">Une gestion simple, des décisions éclairées.</h2>
+        <p class="pg-dashboard-hero-copy">Retrouvez les indicateurs essentiels et les alertes de votre pharmacie au même endroit.</p>
+        <div class="pg-dashboard-hero-actions">
+            {% if can_view_sales %}
+            <a href="{% url 'ventes:caisse' %}" class="btn btn-light d-inline-flex align-items-center gap-2">
+                <i class="bi bi-plus-lg"></i> Nouvelle vente
+            </a>
+            {% endif %}
+            {% if can_view_catalog %}
+            <a href="{% url 'medicaments:medicament_list' %}" class="btn btn-outline-light d-inline-flex align-items-center gap-2">
+                <i class="bi bi-capsule"></i> Voir le catalogue
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="pg-dashboard-hero-mark" aria-hidden="true">
+        <i class="bi bi-capsule-pill"></i>
+    </div>
+</section>
+
+<div class="row row-deck row-cards mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card pg-card pg-card-hover">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-secondary small fw-medium mb-1">Médicaments actifs</div>
+                    <div class="h2 mb-0 fw-bold">{% if can_view_catalog %}{{ kpi.medicaments_actifs }}{% else %}—{% endif %}</div>
+                </div>
+                <span class="pg-kpi-icon bg-primary-lt text-primary">
+                    <i class="bi bi-capsule"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="card pg-card pg-card-hover">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-secondary small fw-medium mb-1">Ventes nettes du jour</div>
+                    <div class="h2 mb-0 fw-bold">{% if can_view_sales %}{{ kpi.ventes_jour|floatformat:0 }} Ar{% else %}—{% endif %}</div>
+                </div>
+                <span class="pg-kpi-icon bg-success-lt text-success">
+                    <i class="bi bi-cash-stack"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="card pg-card pg-card-hover">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-secondary small fw-medium mb-1">Stocks faibles</div>
+                    <div class="h2 mb-0 fw-bold text-warning">{% if can_view_stock %}{{ kpi.stocks_faibles }}{% else %}—{% endif %}</div>
+                </div>
+                <span class="pg-kpi-icon bg-warning-lt text-warning">
+                    <i class="bi bi-exclamation-diamond"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="card pg-card pg-card-hover">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-secondary small fw-medium mb-1">Péremptions proches</div>
+                    <div class="h2 mb-0 fw-bold text-danger">{% if can_view_stock %}{{ kpi.peremptions_proches }}{% else %}—{% endif %}</div>
+                </div>
+                <span class="pg-kpi-icon bg-danger-lt text-danger">
+                    <i class="bi bi-calendar-x"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+    {% if can_view_clients %}
+    <div class="col-sm-6 col-lg-3">
+        <div class="card pg-card pg-card-hover">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-secondary small fw-medium mb-1">Clients actifs</div>
+                    <div class="h2 mb-0 fw-bold">{{ kpi.clients_actifs }}</div>
+                </div>
+                <span class="pg-kpi-icon bg-azure-lt text-azure">
+                    <i class="bi bi-people"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row row-deck row-cards mb-4">
+    {% if can_view_sales %}
+    <div class="col-sm-6 col-lg-3">
+        <div class="card pg-card"><div class="card-body">
+            <div class="text-secondary small fw-medium mb-1">Encaissements confirmés aujourd'hui</div>
+            <div class="h2 mb-0 fw-bold">{{ kpi.encaissements_jour|floatformat:0 }} Ar</div>
+        </div></div>
+    </div>
+    {% endif %}
+    {% if can_view_purchases %}
+    <div class="col-sm-6 col-lg-3">
+        <div class="card pg-card"><div class="card-body">
+            <div class="text-secondary small fw-medium mb-1">Achats enregistrés (7 jours)</div>
+            <div class="h2 mb-0 fw-bold">{{ kpi.achats_semaine|floatformat:0 }} Ar</div>
+        </div></div>
+    </div>
+    {% endif %}
+    {% if can_view_stock %}
+    <div class="col-sm-6 col-lg-3">
+        <div class="card pg-card"><div class="card-body">
+            <div class="text-secondary small fw-medium mb-1">Lots périmés en stock</div>
+            <div class="h2 mb-0 fw-bold text-danger">{{ kpi.lots_perimes }}</div>
+        </div></div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row row-deck row-cards mb-4">
+    {% if can_view_sales %}
+    <div class="col-lg-6">
+        <div class="card pg-card">
+            <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
+                <h3 class="card-title fw-semibold">Évolution des ventes</h3>
+                <div class="text-end">
+                    <span class="badge bg-primary-lt text-primary">Chiffre net — 7 derniers jours</span>
+                    <div id="pg-sales-updated" class="small text-secondary mt-1" aria-live="polite">Chargement des données...</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px;">
+                    <canvas id="pgSalesChart"></canvas>
+                    <p id="pgSalesEmpty" class="d-none text-center text-secondary mt-5">Aucune vente enregistrée sur les 7 derniers jours.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if can_view_sales %}
+    <div class="col-lg-6">
+        <div class="card pg-card h-100">
+            <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
+                <h3 class="card-title fw-semibold">Ventes par catégorie</h3>
+                <span class="badge bg-primary-lt text-primary">30 jours</span>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px;">
+                    <canvas id="pgCategoryChart" aria-label="Diagramme des quantités vendues par catégorie"></canvas>
+                    <p id="pgCategoryEmpty" class="d-none text-center text-secondary mt-5">Aucune vente réelle par catégorie sur les 30 derniers jours.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    </div>
+    {% if can_view_stock or can_view_purchases %}
+<div class="row row-deck row-cards mb-4">
+    {% if can_view_stock %}
+    <div class="col-lg-6">
+        <div class="card pg-card h-100">
+            <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
+                <h3 class="card-title fw-semibold">État des médicaments</h3>
+                <span class="badge bg-primary-lt text-primary">Stock actuel</span>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px;">
+                    <canvas id="pgStockChart" aria-label="Diagramme des médicaments selon leur niveau de stock"></canvas>
+                    <p id="pgStockEmpty" class="d-none text-center text-secondary mt-5">Aucun médicament actif dans le catalogue.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if can_view_purchases %}
+    <div class="col-lg-6">
+        <div class="card pg-card h-100">
+            <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
+                <h3 class="card-title fw-semibold">Achats par fournisseur</h3>
+                <span class="badge bg-primary-lt text-primary">30 jours</span>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px;">
+                    <canvas id="pgSupplierChart" aria-label="Diagramme des achats par fournisseur"></canvas>
+                    <p id="pgSupplierEmpty" class="d-none text-center text-secondary mt-5">Aucun achat enregistré sur les 30 derniers jours.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+    {% endif %}
+
+{% if can_view_stock %}
+<div class="row row-deck row-cards mb-4">
+    <div class="col-lg-6">
+        <div class="card pg-card">
+            <div class="card-header border-0 pb-0">
+                <h3 class="card-title fw-semibold">Stocks sous le seuil</h3>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for med in alertes_stock %}
+                <a class="list-group-item list-group-item-action" href="{% url 'medicaments:medicament_detail' med.pk %}">
+                    <div class="d-flex justify-content-between"><span>{{ med.nom_commercial }}</span><strong>{{ med.quantite_stock_dashboard|default:0 }} / {{ med.seuil_alerte }}</strong></div>
+                </a>
+                {% empty %}
+                <div class="card-body text-secondary small">Aucun médicament sous son seuil d'alerte.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row row-deck row-cards mb-4">
+    {% if can_view_stock %}
+    <div class="col-lg-6">
+        <div class="card pg-card">
+            <div class="card-header"><h3 class="card-title fw-semibold">Péremptions à venir</h3></div>
+            <div class="list-group list-group-flush">
+                {% for lot in alertes_peremption %}
+                <div class="list-group-item d-flex justify-content-between">
+                    <span>{{ lot.medicament.nom_commercial }} — {{ lot.numero_lot }}</span>
+                    <strong>{{ lot.date_peremption|date:"d/m/Y" }}</strong>
+                </div>
+                {% empty %}
+                <div class="card-body text-secondary small">Aucune péremption dans les 30 prochains jours.</div>
+                {% endfor %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'peremptions_pdf' %}" class="btn btn-sm btn-outline-primary">Télécharger le rapport PDF</a>
+                <a href="{% url 'stock_pdf' %}" class="btn btn-sm btn-outline-secondary">Rapport du stock</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if can_view_sales %}
+    <div class="col-lg-6">
+        <div class="card pg-card">
+            <div class="card-header"><h3 class="card-title fw-semibold">Produits les plus vendus (30 jours)</h3></div>
+            <div class="list-group list-group-flush">
+                {% for produit in produits_populaires %}
+                <div class="list-group-item d-flex justify-content-between">
+                    <span>{{ produit.medicament__nom_commercial }}</span><strong>{{ produit.quantite }}</strong>
+                </div>
+                {% empty %}
+                <div class="card-body text-secondary small">Aucune vente sur cette période.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ sales_labels|json_script:"pg-sales-labels" }}
+{{ sales_values|json_script:"pg-sales-values" }}
+{{ sales_category_labels|json_script:"pg-sales-category-labels" }}
+{{ sales_category_values|json_script:"pg-sales-category-values" }}
+{{ stock_status_labels|json_script:"pg-stock-status-labels" }}
+{{ stock_status_values|json_script:"pg-stock-status-values" }}
+{{ purchase_supplier_labels|json_script:"pg-purchase-supplier-labels" }}
+{{ purchase_supplier_values|json_script:"pg-purchase-supplier-values" }}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('pgSalesChart');
+    const categoryCtx = document.getElementById('pgCategoryChart');
+    const stockCtx = document.getElementById('pgStockChart');
+    const supplierCtx = document.getElementById('pgSupplierChart');
+    if ((!ctx && !categoryCtx && !stockCtx && !supplierCtx) || typeof Chart === 'undefined') return;
+    Chart.register({
+        id: 'pgPercentageLabels',
+        afterDatasetsDraw(currentChart) {
+            if (currentChart.config.type !== 'pie') return;
+
+            const drawingContext = currentChart.ctx;
+            currentChart.data.datasets.forEach((dataset, datasetIndex) => {
+                const values = dataset.data.map((value) => Number(value) || 0);
+                const total = values.reduce((sum, value) => sum + value, 0);
+                if (!total) return;
+
+                currentChart.getDatasetMeta(datasetIndex).data.forEach((arc, index) => {
+                    const percentage = values[index] / total * 100;
+                    if (percentage < 5) return;
+
+                    const point = arc.getCenterPoint();
+                    const label = `${percentage.toFixed(1)}%`;
+                    drawingContext.save();
+                    drawingContext.font = '600 12px Inter, sans-serif';
+                    drawingContext.textAlign = 'center';
+                    drawingContext.textBaseline = 'middle';
+                    drawingContext.lineWidth = 3;
+                    drawingContext.strokeStyle = 'rgba(0, 0, 0, 0.65)';
+                    drawingContext.strokeText(label, point.x, point.y);
+                    drawingContext.fillStyle = '#ffffff';
+                    drawingContext.fillText(label, point.x, point.y);
+                    drawingContext.restore();
+                });
+            });
+        }
+    });
+    const updatedEl = document.getElementById('pg-sales-updated');
+    const labels = ctx ? JSON.parse(document.getElementById('pg-sales-labels').textContent) : [];
+    const values = ctx ? JSON.parse(document.getElementById('pg-sales-values').textContent) : [];
+    const categoryLabels = categoryCtx ? JSON.parse(document.getElementById('pg-sales-category-labels').textContent) : [];
+    const categoryValues = categoryCtx ? JSON.parse(document.getElementById('pg-sales-category-values').textContent) : [];
+    const stockLabels = stockCtx ? JSON.parse(document.getElementById('pg-stock-status-labels').textContent) : [];
+    const stockValues = stockCtx ? JSON.parse(document.getElementById('pg-stock-status-values').textContent) : [];
+    const supplierLabels = supplierCtx ? JSON.parse(document.getElementById('pg-purchase-supplier-labels').textContent) : [];
+    const supplierValues = supplierCtx ? JSON.parse(document.getElementById('pg-purchase-supplier-values').textContent) : [];
+    const salesEmpty = document.getElementById('pgSalesEmpty');
+    const categoryEmpty = document.getElementById('pgCategoryEmpty');
+    const stockEmpty = document.getElementById('pgStockEmpty');
+    const supplierEmpty = document.getElementById('pgSupplierEmpty');
+    const hasSalesData = (data) => data.some((value) => Number(value) > 0);
+    const getSlicePercentage = (context) => {
+        const values = context.chart.data.datasets[context.datasetIndex].data;
+        const total = values.reduce((sum, value) => sum + Number(value || 0), 0);
+        return total ? `${(Number(context.raw) / total * 100).toFixed(1)}%` : '0%';
+    };
+    let chart;
+    let categoryChart;
+    let stockChart;
+    let supplierChart;
+
+    if (ctx) chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Ventes nettes (Ar)',
+                data: values,
+                borderColor: '#087f6b',
+                backgroundColor: 'rgba(8, 127, 107, 0.12)',
+                fill: true,
+                tension: 0.35,
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `${Number(context.raw).toLocaleString('fr-FR')} Ar`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    if (categoryCtx) categoryChart = new Chart(categoryCtx, {
+        type: 'pie',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryValues,
+                backgroundColor: ['#087f6b', '#2f80ed', '#f4a340', '#e65f5c', '#8b72cf', '#36a3a0', '#a8bd45'],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `${context.label}: ${context.raw} unité(s) (${getSlicePercentage(context)})`
+                    }
+                }
+            }
+        }
+    });
+
+    if (stockCtx) stockChart = new Chart(stockCtx, {
+        type: 'pie',
+        data: {
+            labels: stockLabels,
+            datasets: [{
+                data: stockValues,
+                backgroundColor: ['#087f6b', '#f4a340', '#e65f5c'],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `${context.label}: ${context.raw} médicament(s) (${getSlicePercentage(context)})`
+                    }
+                }
+            }
+        }
+    });
+    if (supplierCtx) supplierChart = new Chart(supplierCtx, {
+        type: 'pie',
+        data: {
+            labels: supplierLabels,
+            datasets: [{
+                data: supplierValues,
+                backgroundColor: ['#087f6b', '#2f80ed', '#f4a340', '#e65f5c', '#8b72cf', '#36a3a0'],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `${context.label}: ${Number(context.raw).toLocaleString('fr-FR')} Ar (${getSlicePercentage(context)})`
+                    }
+                }
+            }
+        }
+    });
+
+    const showChartData = (canvas, emptyMessage, hasData) => {
+        if (!canvas || !emptyMessage) return;
+        canvas.classList.toggle('d-none', !hasData);
+        emptyMessage.classList.toggle('d-none', hasData);
+    };
+    showChartData(ctx, salesEmpty, hasSalesData(values));
+    showChartData(categoryCtx, categoryEmpty, categoryLabels.length > 0);
+    showChartData(stockCtx, stockEmpty, stockLabels.length > 0 && stockValues.reduce((total, value) => total + value, 0) > 0);
+    showChartData(supplierCtx, supplierEmpty, supplierLabels.length > 0);
+
+    const updateChartTheme = () => {
+        const themeStyles = getComputedStyle(document.documentElement);
+        const textColor = themeStyles.getPropertyValue('--pg-text-main').trim();
+        const borderColor = themeStyles.getPropertyValue('--pg-border').trim();
+        const surfaceColor = themeStyles.getPropertyValue('--pg-bg-surface').trim();
+        const primaryColor = themeStyles.getPropertyValue('--pg-primary').trim();
+        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+
+        [chart, categoryChart, stockChart, supplierChart].filter(Boolean).forEach((currentChart) => {
+            currentChart.options.color = textColor;
+            if (currentChart.options.scales) {
+                Object.values(currentChart.options.scales).forEach((scale) => {
+                    scale.ticks = { color: textColor };
+                    scale.grid = { color: borderColor };
+                });
+            }
+            if (currentChart.options.plugins && currentChart.options.plugins.legend) {
+                currentChart.options.plugins.legend.labels = { color: textColor };
+            }
+            currentChart.data.datasets.forEach((dataset) => {
+                if (currentChart.config.type === 'line') {
+                    dataset.borderColor = primaryColor;
+                    dataset.backgroundColor = isDark ? 'rgba(42, 197, 160, 0.16)' : 'rgba(8, 127, 107, 0.12)';
+                } else if (Array.isArray(dataset.backgroundColor) && dataset.borderWidth) {
+                    dataset.borderColor = surfaceColor;
+                }
+            });
+            currentChart.update('none');
+        });
+    };
+    updateChartTheme();
+    window.addEventListener('pharmagest:theme-change', updateChartTheme);
+
+    let isRefreshing = false;
+    const refreshSales = async () => {
+        if (isRefreshing) return;
+        isRefreshing = true;
+        try {
+            const response = await fetch("{% url 'dashboard_sales_data' %}", {
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const data = await response.json();
+            if (ctx && (!Array.isArray(data.labels) || !Array.isArray(data.values) || data.labels.length !== data.values.length)) {
+                throw new Error('Données du graphique invalides');
+            }
+            if (categoryCtx && (!data.categories || !Array.isArray(data.categories.labels) ||
+                !Array.isArray(data.categories.values) ||
+                data.categories.labels.length !== data.categories.values.length)) {
+                throw new Error('Données des catégories invalides');
+            }
+            if (stockCtx && (!data.stock || !Array.isArray(data.stock.labels) ||
+                !Array.isArray(data.stock.values) ||
+                data.stock.labels.length !== data.stock.values.length)) {
+                throw new Error('Données du stock invalides');
+            }
+            if (supplierCtx && (!data.purchases || !Array.isArray(data.purchases.labels) ||
+                !Array.isArray(data.purchases.values) ||
+                data.purchases.labels.length !== data.purchases.values.length)) {
+                throw new Error('Données des fournisseurs invalides');
+            }
+
+            if (ctx) {
+                chart.data.labels = data.labels;
+                chart.data.datasets[0].data = data.values;
+                chart.update('active');
+                showChartData(ctx, salesEmpty, hasSalesData(data.values));
+            }
+            if (categoryCtx) {
+                const hasCurrentCategories = data.categories.labels.length > 0;
+                categoryChart.data.labels = data.categories.labels;
+                categoryChart.data.datasets[0].data = data.categories.values;
+                categoryChart.update('active');
+                showChartData(categoryCtx, categoryEmpty, hasCurrentCategories);
+            }
+            if (stockCtx) {
+                stockChart.data.labels = data.stock.labels;
+                stockChart.data.datasets[0].data = data.stock.values;
+                stockChart.update('active');
+                const hasStockData = data.stock.values.reduce((total, value) => total + value, 0) > 0;
+                showChartData(stockCtx, stockEmpty, hasStockData);
+            }
+            if (supplierCtx) {
+                const hasPurchaseData = data.purchases.labels.length > 0;
+                supplierChart.data.labels = data.purchases.labels;
+                supplierChart.data.datasets[0].data = data.purchases.values;
+                supplierChart.update('active');
+                showChartData(supplierCtx, supplierEmpty, hasPurchaseData);
+            }
+            if (updatedEl) updatedEl.textContent = `Mis à jour à ${new Date().toLocaleTimeString('fr-FR')}`;
+        } catch {
+            if (updatedEl) updatedEl.textContent = 'Mise à jour indisponible — nouvelle tentative dans 30 s.';
+        } finally {
+            isRefreshing = false;
+        }
+    };
+
+    refreshSales();
+    window.setInterval(refreshSales, 30000);
+});
+</script>
+{% endblock %}

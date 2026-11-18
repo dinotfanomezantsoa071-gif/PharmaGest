@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Mouvements de stock{% endblock %}
+{% block page_pretitle %}Traçabilité{% endblock %}
+{% block page_title %}Journal des mouvements de stock{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'stock:stock_list' %}" class="btn btn-outline-secondary">Retour aux lots</a>
+{% endblock %}
+
+{% block content %}
+<div class="card pg-card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Médicament, lot ou référence...">
+            </div>
+            <div class="col-md-4">
+                <select name="type" class="form-select">
+                    <option value="">Tous les types</option>
+                    {% for code, label in types %}
+                    <option value="{{ code }}" {% if type_mvt == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary">Filtrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card pg-card">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table pg-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Médicament / Lot</th>
+                    <th>Variation</th>
+                    <th>Avant / Après</th>
+                    <th>Référence</th>
+                    <th>Auteur</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in page_obj %}
+                <tr>
+                    <td class="text-secondary small">{{ m.date_mouvement|date:"d/m/Y H:i" }}</td>
+                    <td><span class="badge bg-primary-lt text-primary">{{ m.get_type_mouvement_display }}</span></td>
+                    <td>
+                        <div class="fw-semibold">{{ m.medicament.nom_commercial }}</div>
+                        <div class="text-secondary small">Lot : {{ m.lot.numero_lot }}</div>
+                    </td>
+                    <td class="fw-bold {% if m.quantite > 0 %}text-success{% else %}text-danger{% endif %}">
+                        {% if m.quantite > 0 %}+{% endif %}{{ m.quantite }}
+                    </td>
+                    <td>{{ m.stock_avant }} <i class="bi bi-arrow-right mx-1"></i> <strong>{{ m.stock_apres }}</strong></td>
+                    <td>{{ m.reference_document|default:"—" }}</td>
+                    <td>{{ m.utilisateur.username }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-5 text-secondary">Aucun mouvement enregistré.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

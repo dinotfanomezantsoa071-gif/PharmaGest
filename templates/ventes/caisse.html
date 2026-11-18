@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Point de vente (Caisse){% endblock %}
+{% block page_pretitle %}Ventes & Caisse{% endblock %}
+{% block page_title %}Nouvelle vente — Caisse rapide{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Catalogue des lots délivrables (FEFO) -->
+    <div class="col-lg-7">
+        <div class="card pg-card mb-3">
+            <div class="card-body py-3">
+                <div class="input-icon">
+                    <span class="input-icon-addon"><i class="bi bi-upc-scan"></i></span>
+                    <input type="text" id="caisse-search" class="form-control" placeholder="Rechercher un médicament, DCI, lot ou scanner code-barres..." autofocus>
+                </div>
+            </div>
+        </div>
+
+        <div class="card pg-card">
+            <div class="card-header">
+                <h3 class="card-title">Lots délivrables (triés par péremption FEFO)</h3>
+            </div>
+            <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+                <table class="table table-vcenter card-table pg-table" id="caisse-lots-table">
+                    <thead>
+                        <tr>
+                            <th>Médicament</th>
+                            <th>Lot / Exp.</th>
+                            <th>Dispo</th>
+                            <th>Prix</th>
+                            <th class="text-end">Ajouter</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lot in lots %}
+                        <tr class="caisse-lot-row"
+                            data-search="{{ lot.medicament.nom_commercial|lower }} {{ lot.medicament.denomination_generique|lower }} {{ lot.medicament.code_barres|default:''|lower }} {{ lot.numero_lot|lower }}">
+                            <td>
+                                <div class="fw-semibold">{{ lot.medicament.nom_commercial }}</div>
+                                <div class="text-secondary small">{{ lot.medicament.forme_pharmaceutique }} — {{ lot.medicament.dosage }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-medium">{{ lot.numero_lot }}</div>
+                                <div class="text-secondary small">Exp: {{ lot.date_peremption|date:"d/m/Y" }}</div>
+                            </td>
+                            <td><span class="badge bg-success-lt text-success">{{ lot.quantite_disponible }}</span></td>
+                            <td class="fw-semibold">{{ lot.medicament.prix_vente|floatformat:0 }} Ar</td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-primary add-to-cart-btn"
+                                    data-lot-id="{{ lot.pk }}"
+                                    data-nom="{{ lot.medicament.nom_commercial }}"
+                                    data-lot-num="{{ lot.numero_lot }}"
+                                    data-prix="{{ lot.medicament.prix_vente }}"
+                                    data-max="{{ lot.quantite_disponible }}">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-5 text-secondary">Aucun lot délivrable en stock.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panier et paiement -->
+    <div class="col-lg-5">
+        <form method="post" id="caisse-form" class="card pg-card">
+            {% csrf_token %}
+            <input type="hidden" name="panier_json" id="panier_json" value="[]">
+            <input type="hidden" name="jeton_vente" value="{{ jeton_vente }}">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title"><i class="bi bi-cart3 me-2"></i>Panier en cours</h3>
+                <button type="button" id="clear-cart-btn" class="btn btn-sm btn-ghost-danger">Vider</button>
+            </div>
+
+            <div class="card-body">
+                <div id="cart-items-container" class="mb-3">
+                    <p class="text-center text-secondary py-4 mb-0">Sélectionnez un produit à gauche pour l'ajouter.</p>
+                </div>
+
+                <div class="border-top pt-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-3 fw-semibold">Total à payer</span>
+                        <span id="cart-total" class="fs-1 fw-bold text-primary">0 Ar</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Client (facultatif — vente comptoir)</label>
+                        <select name="client_id" class="form-select form-select-sm">
+                            <option value="">Client comptoir anonyme</option>
+                            {% for c in clients %}
+                            <option value="{{ c.pk }}">{{ c.nom }} {% if c.telephone %}({{ c.telephone }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium">Mode de paiement</label>
+                            <select name="mode_paiement" id="mode_paiement" class="form-select form-select-sm">
+                                {% for code, label in modes_paiement %}
+                                <option value="{{ code }}" {% if code == 'MOBILE_MONEY' %}disabled{% endif %}>
+                                    {{ label }}{% if code == 'MOBILE_MONEY' %} — non activé{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Référence transaction (si électronique)</label>
+                        <input type="text" name="reference_transaction" class="form-control form-control-sm" placeholder="Ex : MVola #123456">
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-sale-btn" class="btn btn-primary w-100 py-2 fw-semibold" disabled>
+                    <i class="bi bi-check2-circle me-2"></i>Valider la vente et encaisser
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const cart = {};
+    const container = document.getElementById('cart-items-container');
+    const totalEl = document.getElementById('cart-total');
+    const panierInput = document.getElementById('panier_json');
+    const submitBtn = document.getElementById('submit-sale-btn');
+    const searchInput = document.getElementById('caisse-search');
+    searchInput.addEventListener('input', () => {
+        const q = searchInput.value.trim().toLowerCase();
+        document.querySelectorAll('.caisse-lot-row').forEach(row => {
+            row.style.display = row.dataset.search.includes(q) ? '' : 'none';
+        });
+    });
+
+    const renderCart = () => {
+        const keys = Object.keys(cart);
+        if (keys.length === 0) {
+            container.innerHTML = '<p class="text-center text-secondary py-4 mb-0">Sélectionnez un produit à gauche pour l\'ajouter.</p>';
+            totalEl.textContent = '0 Ar';
+            panierInput.value = '[]';
+            submitBtn.disabled = true;
+            return;
+        }
+
+        let html = '<div class="list-group list-group-flush">';
+        let total = 0;
+        const payload = [];
+
+        keys.forEach(id => {
+            const item = cart[id];
+            const sub = item.prix * item.quantite;
+            total += sub;
+            payload.push({ lot_id: parseInt(id), quantite: item.quantite });
+
+            html += `
+                <div class="list-group-item px-0 py-2 d-flex align-items-center justify-content-between gap-2">
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold small">${item.nom}</div>
+                        <div class="text-secondary" style="font-size:0.75rem;">Lot ${item.lotNum} — ${Math.round(item.prix).toLocaleString('fr-FR')} Ar</div>
+                    </div>
+                    <div class="d-flex align-items-center gap-1">
+                        <input type="number" min="1" max="${item.max}" value="${item.quantite}"
+                            class="form-control form-control-sm cart-qty-input" data-id="${id}" style="width:65px;">
+                        <button type="button" class="btn btn-sm btn-ghost-danger cart-remove-btn" data-id="${id}">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>`;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+        totalEl.textContent = Math.round(total).toLocaleString('fr-FR') + ' Ar';
+        panierInput.value = JSON.stringify(payload);
+        submitBtn.disabled = false;
+    };
+
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.lotId;
+            const max = parseInt(btn.dataset.max);
+            if (!cart[id]) {
+                cart[id] = {
+                    nom: btn.dataset.nom,
+                    lotNum: btn.dataset.lotNum,
+                    prix: parseFloat(btn.dataset.prix),
+                    max: max,
+                    quantite: 1,
+                };
+            } else if (cart[id].quantite < max) {
+                cart[id].quantite += 1;
+            }
+            renderCart();
+        });
+    });
+
+    container.addEventListener('change', (e) => {
+        if (e.target.classList.contains('cart-qty-input')) {
+            const id = e.target.dataset.id;
+            let val = parseInt(e.target.value) || 1;
+            if (val < 1) val = 1;
+            if (val > cart[id].max) val = cart[id].max;
+            cart[id].quantite = val;
+            renderCart();
+        }
+    });
+
+    container.addEventListener('click', (e) => {
+        const btn = e.target.closest('.cart-remove-btn');
+        if (btn) {
+            delete cart[btn.dataset.id];
+            renderCart();
+        }
+    });
+
+    document.getElementById('clear-cart-btn').addEventListener('click', () => {
+        Object.keys(cart).forEach(k => delete cart[k]);
+        renderCart();
+    });
+
+    document.getElementById('caisse-form').addEventListener('submit', () => {
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

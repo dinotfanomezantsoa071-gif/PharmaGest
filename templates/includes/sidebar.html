@@ -1,0 +1,98 @@
+<aside class="navbar navbar-vertical navbar-expand-lg pg-sidebar">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <h1 class="navbar-brand navbar-brand-autodark py-3 px-2">
+            <a href="{% url 'dashboard' %}" class="d-flex align-items-center gap-2 text-decoration-none">
+                <span class="pg-kpi-icon bg-primary text-white" style="width:36px;height:36px;font-size:1.1rem;">
+                    <i class="bi bi-capsule-pill"></i>
+                </span>
+                <span class="fw-bold fs-3" style="color: var(--pg-text-main);">Pharma<span style="color: var(--pg-primary);">Gest</span></span>
+            </a>
+        </h1>
+
+        <div class="collapse navbar-collapse" id="sidebar-menu">
+            <ul class="navbar-nav pt-lg-2">
+                <li class="pg-sidebar-section">Pilotage</li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                        <span class="nav-link-icon"><i class="bi bi-grid-1x2"></i></span>
+                        <span class="nav-link-title">Tableau de bord</span>
+                    </a>
+                </li>
+
+                <li class="pg-sidebar-section">Catalogue & Stock</li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.app_name == 'medicaments' and 'categorie' not in request.resolver_match.url_name %}active{% endif %}" href="{% url 'medicaments:medicament_list' %}">
+                        <span class="nav-link-icon"><i class="bi bi-capsule"></i></span>
+                        <span class="nav-link-title">Médicaments</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'categorie' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'medicaments:categorie_list' %}">
+                        <span class="nav-link-icon"><i class="bi bi-tags"></i></span>
+                        <span class="nav-link-title">Catégories</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.app_name == 'stock' %}active{% endif %}" href="{% url 'stock:stock_list' %}">
+                        <span class="nav-link-icon"><i class="bi bi-boxes"></i></span>
+                        <span class="nav-link-title">Stocks & Lots (FEFO)</span>
+                    </a>
+                </li>
+
+                <li class="pg-sidebar-section">Approvisionnement</li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.app_name == 'fournisseurs' %}active{% endif %}" href="{% url 'fournisseurs:fournisseur_list' %}">
+                        <span class="nav-link-icon"><i class="bi bi-truck"></i></span>
+                        <span class="nav-link-title">Fournisseurs</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.app_name == 'achats' %}active{% endif %}" href="{% url 'achats:achat_list' %}">
+                        <span class="nav-link-icon"><i class="bi bi-bag-check"></i></span>
+                        <span class="nav-link-title">Achats & Réceptions</span>
+                    </a>
+                </li>
+
+                <li class="pg-sidebar-section">Ventes & Caisse</li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'caisse' %}active{% endif %}" href="{% url 'ventes:caisse' %}">
+                        <span class="nav-link-icon"><i class="bi bi-cash-register"></i></span>
+                        <span class="nav-link-title">Point de vente (Caisse)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.app_name == 'ventes' and request.resolver_match.url_name != 'caisse' %}active{% endif %}" href="{% url 'ventes:vente_list' %}">
+                        <span class="nav-link-icon"><i class="bi bi-receipt"></i></span>
+                        <span class="nav-link-title">Historique & Retours</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.app_name == 'clients' %}active{% endif %}" href="{% url 'clients:client_list' %}">
+                        <span class="nav-link-icon"><i class="bi bi-people"></i></span>
+                        <span class="nav-link-title">Clients</span>
+                    </a>
+                </li>
+
+                <li class="pg-sidebar-section">Rapports & Système</li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'rapports_index' %}active{% endif %}" href="{% url 'rapports_index' %}">
+                        <span class="nav-link-icon"><i class="bi bi-file-earmark-pdf"></i></span>
+                        <span class="nav-link-title">Documents PDF</span>
+                    </a>
+                </li>
+                {% if perms.utilisateurs.view_utilisateur %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'utilisateur_list' %}active{% endif %}" href="{% url 'utilisateur_list' %}">
+                        <span class="nav-link-icon"><i class="bi bi-shield-lock"></i></span>
+                        <span class="nav-link-title">Utilisateurs & Rôles</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</aside>

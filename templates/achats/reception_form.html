@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Réception {{ commande.numero }}{% endblock %}
+{% block page_pretitle %}Approvisionnement{% endblock %}
+{% block page_title %}Réception de la commande {{ commande.numero }}{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <div class="card pg-card mb-4">
+        <div class="card-body">
+            <label class="form-label fw-medium">Observations (bon de livraison fournisseur, état des colis...)</label>
+            <input type="text" name="observations" class="form-control" placeholder="Facultatif">
+        </div>
+    </div>
+
+    <div class="card pg-card">
+        <div class="card-header"><h3 class="card-title">Saisie des lots et quantités reçues</h3></div>
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table pg-table">
+                <thead>
+                    <tr>
+                        <th>Médicament</th>
+                        <th>Reste à recevoir</th>
+                        <th>Quantité reçue</th>
+                        <th>Numéro de lot</th>
+                        <th>Date de péremption</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in lignes_restantes %}
+                    <tr>
+                        <td class="fw-semibold">{{ item.ligne.medicament.nom_commercial }}</td>
+                        <td><span class="badge bg-azure-lt text-azure">{{ item.reste }}</span></td>
+                        <td style="width:140px;">
+                            <input type="number" name="qte_{{ item.ligne.pk }}" min="0" max="{{ item.reste }}" value="{{ item.reste }}" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" name="lot_{{ item.ligne.pk }}" class="form-control" placeholder="Ex : LOT-2026-A">
+                        </td>
+                        <td>
+                            <input type="date" name="peremption_{{ item.ligne.pk }}" class="form-control">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex justify-content-end gap-2">
+            <a href="{% url 'achats:achat_detail' commande.pk %}" class="btn btn-outline-secondary">Annuler</a>
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i> Valider la réception et entrer en stock</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

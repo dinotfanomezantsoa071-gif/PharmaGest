@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Nouvelle commande{% endblock %}
+{% block page_pretitle %}Approvisionnement / Achats{% endblock %}
+{% block page_title %}Créer une commande d'achat{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <div class="card pg-card mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Fournisseur</label>
+                    <select name="fournisseur" class="form-select" required>
+                        <option value="">-- Sélectionner un fournisseur --</option>
+                        {% for f in fournisseurs %}
+                        <option value="{{ f.pk }}">{{ f.raison_sociale }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Notes (facultatif)</label>
+                    <input type="text" name="notes" class="form-control" placeholder="Référence devis ou remarque...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card pg-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title">Lignes de la commande</h3>
+            <button type="button" id="add-achat-row" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-plus-lg me-1"></i> Ajouter un produit
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table pg-table" id="achat-lines-table">
+                <thead>
+                    <tr>
+                        <th>Médicament</th>
+                        <th style="width:140px;">Quantité</th>
+                        <th style="width:180px;">Prix unitaire achat (Ar)</th>
+                        <th style="width:160px;">Sous-total</th>
+                        <th style="width:60px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="achat-row">
+                        <td>
+                            <select name="medicament_id[]" class="form-select med-select" required>
+                                <option value="">-- Choisir --</option>
+                                {% for m in medicaments %}
+                                <option value="{{ m.pk }}" data-prix="{{ m.prix_achat }}">{{ m.nom_commercial }} ({{ m.dosage }})</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><input type="number" name="quantite[]" class="form-control qty-input" min="1" value="1" required></td>
+                        <td><input type="number" name="prix_achat[]" class="form-control price-input" step="0.01" min="0.01" required></td>
+                        <td class="fw-semibold row-subtotal">0 Ar</td>
+                        <td><button type="button" class="btn btn-sm btn-ghost-danger remove-row"><i class="bi bi-trash"></i></button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <div class="fs-3 fw-bold">Total estimé : <span id="achat-total" class="text-primary">0 Ar</span></div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'achats:achat_list' %}" class="btn btn-outline-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Enregistrer en brouillon</button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tbody = document.querySelector('#achat-lines-table tbody');
+    const totalEl = document.getElementById('achat-total');
+
+    const recalc = () => {
+        let total = 0;
+        tbody.querySelectorAll('.achat-row').forEach(row => {
+            const q = parseFloat(row.querySelector('.qty-input').value) || 0;
+            const p = parseFloat(row.querySelector('.price-input').value) || 0;
+            const sub = q * p;
+            row.querySelector('.row-subtotal').textContent = Math.round(sub).toLocaleString('fr-FR') + ' Ar';
+            total += sub;
+        });
+        totalEl.textContent = Math.round(total).toLocaleString('fr-FR') + ' Ar';
+    };
+
+    tbody.addEventListener('change', (e) => {
+        if (e.target.classList.contains('med-select')) {
+            const opt = e.target.selectedOptions[0];
+            const prix = opt ? opt.getAttribute('data-prix') : '';
+            const row = e.target.closest('.achat-row');
+            if (prix) row.querySelector('.price-input').value = prix;
+        }
+        recalc();
+    });
+
+    tbody.addEventListener('input', recalc);
+
+    document.getElementById('add-achat-row').addEventListener('click', () => {
+        const clone = tbody.querySelector('.achat-row').cloneNode(true);
+        clone.querySelector('.med-select').value = '';
+        clone.querySelector('.qty-input').value = 1;
+        clone.querySelector('.price-input').value = '';
+        clone.querySelector('.row-subtotal').textContent = '0 Ar';
+        tbody.appendChild(clone);
+    });
+
+    tbody.addEventListener('click', (e) => {
+        const btn = e.target.closest('.remove-row');
+        if (btn && tbody.querySelectorAll('.achat-row').length > 1) {
+            btn.closest('.achat-row').remove();
+            recalc();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% load static %}
+<!doctype html>
+<html lang="fr" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        try {
+            const theme = localStorage.getItem('pharmagest-theme');
+            if (theme === 'dark' || theme === 'light') {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+            }
+        } catch {
+            // The default light theme remains available when browser storage is disabled.
+        }
+    </script>
+    <title>Connexion — PharmaGest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{% static 'css/pharmagest.css' %}">
+</head>
+<body>
+    <div class="pg-login-wrapper">
+        <!-- Panneau gauche visuel -->
+        <div class="col-lg-5 d-none d-lg-flex flex-column justify-content-between p-5 pg-login-brand">
+            <div class="d-flex align-items-center gap-2">
+                <span class="pg-kpi-icon bg-white text-success" style="width:40px;height:40px;">
+                    <i class="bi bi-capsule-pill"></i>
+                </span>
+                <span class="fs-2 fw-bold text-white">PharmaGest</span>
+            </div>
+
+            <div>
+                <span class="badge bg-white-lt text-white mb-3 px-3 py-2">Plateforme de gestion officinale</span>
+                <h1 class="display-6 fw-bold text-white mb-3">Pilotez votre pharmacie avec précision et sérénité.</h1>
+                <p class="text-white-50 fs-4 mb-0">
+                    Suivi des lots FEFO, alertes de péremption, caisse rapide et traçabilité complète des ventes et approvisionnements.
+                </p>
+            </div>
+
+            <div class="d-flex gap-4 text-white-50 small">
+                <span><i class="bi bi-shield-check me-1"></i> Accès sécurisé par rôles</span>
+                <span><i class="bi bi-activity me-1"></i> Stock en temps réel</span>
+            </div>
+        </div>
+
+        <!-- Panneau droit formulaire -->
+        <div class="col-12 col-lg-7 d-flex flex-column justify-content-center align-items-center p-4 p-md-5 position-relative">
+            <button type="button" id="pg-theme-toggle" class="btn btn-icon btn-ghost-secondary position-absolute top-0 end-0 m-3" title="Changer de thème">
+                <i id="pg-theme-icon" class="bi bi-moon-stars"></i>
+            </button>
+
+            <div class="w-100" style="max-width: 420px;">
+                <div class="d-flex d-lg-none align-items-center gap-2 mb-4 justify-content-center">
+                    <span class="pg-kpi-icon bg-primary text-white" style="width:38px;height:38px;">
+                        <i class="bi bi-capsule-pill"></i>
+                    </span>
+                    <span class="fs-2 fw-bold">Pharma<span style="color: var(--pg-primary);">Gest</span></span>
+                </div>
+
+                <div class="pg-card p-4 p-md-5">
+                    <h2 class="fw-bold mb-1">Connexion</h2>
+                    <p class="text-secondary small mb-4">Entrez vos identifiants pour accéder à votre espace de travail.</p>
+
+                    {% if form_error %}
+                    <div class="alert alert-danger d-flex align-items-center gap-2 py-2 small" role="alert">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <span>{{ form_error }}</span>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'login' %}" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label fw-medium">Nom d'utilisateur</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" name="username" id="id_username" class="form-control" placeholder="Ex : pharmacien.chef" required autofocus>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="id_password" class="form-label fw-medium mb-0">Mot de passe</label>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" name="password" id="id_password" class="form-control" placeholder="Votre mot de passe" required>
+                                <button type="button" class="btn btn-outline-secondary" data-toggle-password="id_password" aria-label="Afficher le mot de passe">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+                        </button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'password_reset' %}" class="small">Mot de passe oublié ?</a>
+                    </div>
+                </div>
+
+                <p class="text-center text-secondary small mt-4 mb-0">
+                    Accès réservé au personnel autorisé de la pharmacie.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+    <script src="{% static 'js/pharmagest.js' %}"></script>
+</body>
+</html>

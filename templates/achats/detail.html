@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ commande.numero }}{% endblock %}
+{% block page_pretitle %}Commande d'achat{% endblock %}
+{% block page_title %}{{ commande.numero }} — {{ commande.fournisseur.raison_sociale }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-list">
+    <a href="{% url 'commande_achat_pdf' commande.pk %}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-pdf me-1"></i> Bon de commande PDF</a>
+    {% if commande.statut == 'BROUILLON' %}
+    <form method="post" action="{% url 'achats:achat_valider' commande.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i> Valider la commande</button>
+    </form>
+    {% endif %}
+    {% if commande.statut == 'COMMANDEE' or commande.statut == 'PARTIELLE' %}
+    <a href="{% url 'achats:reception_create' commande.pk %}" class="btn btn-success">
+        <i class="bi bi-box-arrow-in-down me-1"></i> Réceptionner
+    </a>
+    {% endif %}
+    {% if commande.statut == 'BROUILLON' or commande.statut == 'COMMANDEE' %}
+    <button type="button" class="btn btn-outline-danger"
+        data-bs-toggle="modal" data-bs-target="#pgConfirmModal"
+        data-confirm-title="Annuler la commande"
+        data-confirm-message="Confirmer l'annulation de la commande {{ commande.numero }} ?"
+        data-confirm-url="{% url 'achats:achat_annuler' commande.pk %}">
+        Annuler
+    </button>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card pg-card mb-4">
+    <div class="card-body d-flex flex-wrap gap-4 justify-content-between">
+        <div><span class="text-secondary small d-block">Statut</span><span class="badge bg-primary-lt text-primary fs-5">{{ commande.get_statut_display }}</span></div>
+        <div><span class="text-secondary small d-block">Date</span><strong>{{ commande.date_commande|date:"d/m/Y H:i" }}</strong></div>
+        <div><span class="text-secondary small d-block">Créée par</span><strong>{{ commande.utilisateur.username }}</strong></div>
+        <div><span class="text-secondary small d-block">Montant total</span><strong class="fs-3 text-primary">{{ commande.montant_total|floatformat:0 }} Ar</strong></div>
+    </div>
+</div>
+
+<div class="card pg-card mb-4">
+    <div class="card-header"><h3 class="card-title">Lignes commandées</h3></div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table pg-table">
+            <thead>
+                <tr><th>Médicament</th><th>Commandée</th><th>Reçue</th><th>Prix unitaire</th><th>Sous-total</th></tr>
+            </thead>
+            <tbody>
+                {% for l in lignes %}
+                <tr>
+                    <td class="fw-semibold">{{ l.medicament.nom_commercial }}</td>
+                    <td>{{ l.quantite_commandee }}</td>
+                    <td>{{ l.quantite_recue }}</td>
+                    <td>{{ l.prix_unitaire_achat|floatformat:0 }} Ar</td>
+                    <td class="fw-bold">{{ l.sous_total|floatformat:0 }} Ar</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card pg-card">
+    <div class="card-header"><h3 class="card-title">Historique des réceptions</h3></div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table pg-table">
+            <thead><tr><th>Numéro</th><th>Date</th><th>Réceptionnée par</th><th>Observations</th><th></th></tr></thead>
+            <tbody>
+                {% for r in receptions %}
+                <tr>
+                    <td class="fw-semibold">{{ r.numero }}</td>
+                    <td>{{ r.date_reception|date:"d/m/Y H:i" }}</td>
+                    <td>{{ r.utilisateur.username }}</td>
+                    <td>{{ r.observations|default:"—" }}</td>
+                    <td class="text-end"><a href="{% url 'reception_pdf' r.pk %}" class="btn btn-sm btn-outline-primary">Bon PDF</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-4 text-secondary">Aucune réception enregistrée (le stock n'a pas encore été augmenté).</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}  

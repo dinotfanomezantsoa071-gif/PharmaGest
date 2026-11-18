@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Catégories{% endblock %}
+{% block page_pretitle %}Catalogue{% endblock %}
+{% block page_title %}Catégories de médicaments{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'medicaments:categorie_create' %}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+    <i class="bi bi-plus-lg"></i> Nouvelle catégorie
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card pg-card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="input-icon">
+                    <span class="input-icon-addon"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Rechercher une catégorie...">
+                </div>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary">Rechercher</button>
+                {% if q %}
+                <a href="{% url 'medicaments:categorie_list' %}" class="btn btn-ghost-secondary">Réinitialiser</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card pg-card">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table pg-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Description</th>
+                    <th>Médicaments liés</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in page_obj %}
+                <tr>
+                    <td class="fw-semibold">{{ cat.nom }}</td>
+                    <td class="text-secondary">{{ cat.description|default:"—"|truncatechars:80 }}</td>
+                    <td><span class="badge bg-primary-lt text-primary">{{ cat.medicaments.count }}</span></td>
+                    <td class="text-end">
+                        <div class="btn-list justify-content-end flex-nowrap">
+                            <a href="{% url 'medicaments:categorie_update' cat.pk %}" class="btn btn-sm btn-outline-secondary" title="Modifier">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal" data-bs-target="#pgConfirmModal"
+                                data-confirm-title="Supprimer la catégorie"
+                                data-confirm-message="Voulez-vous supprimer « {{ cat.nom }} » ?"
+                                data-confirm-url="{% url 'medicaments:categorie_delete' cat.pk %}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-5 text-secondary">Aucune catégorie enregistrée.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

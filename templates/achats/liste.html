@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Achats{% endblock %}
+{% block page_pretitle %}Approvisionnement{% endblock %}
+{% block page_title %}Commandes d'achat{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'achats:achat_create' %}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+    <i class="bi bi-plus-lg"></i> Nouvelle commande
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card pg-card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <select name="statut" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    {% for code, label in statuts %}
+                    <option value="{{ code }}" {% if statut == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary">Filtrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card pg-card">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table pg-table">
+            <thead>
+                <tr><th>Numéro</th><th>Fournisseur</th><th>Date</th><th>Total</th><th>Statut</th><th class="text-end">Action</th></tr>
+            </thead>
+            <tbody>
+                {% for cmd in page_obj %}
+                <tr>
+                    <td class="fw-semibold">{{ cmd.numero }}</td>
+                    <td>{{ cmd.fournisseur.raison_sociale }}</td>
+                    <td>{{ cmd.date_commande|date:"d/m/Y H:i" }}</td>
+                    <td class="fw-bold">{{ cmd.montant_total|floatformat:0 }} Ar</td>
+                    <td><span class="badge bg-primary-lt text-primary">{{ cmd.get_statut_display }}</span></td>
+                    <td class="text-end">
+                        <a href="{% url 'achats:achat_detail' cmd.pk %}" class="btn btn-sm btn-outline-primary">Ouvrir</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-5 text-secondary">Aucune commande d'achat.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

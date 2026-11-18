@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titre }}{% endblock %}
+{% block page_pretitle %}Administration{% endblock %}
+{% block page_title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="card pg-card">
+    <form method="post">
+        {% csrf_token %}
+        <div class="card-body">
+            {% for field in form %}
+            <div class="mb-3">
+                {% if field.name == 'roles' %}
+                <label class="form-label">{{ field.label }}</label>
+                <div class="d-flex flex-wrap gap-3">{{ field }}</div>
+                {% elif field.field.widget.input_type == 'checkbox' %}
+                <div class="form-check">{{ field }}<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>
+                {% else %}
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% endif %}
+                {% if field.help_text %}<div class="form-hint">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            {% endfor %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="alert alert-info mb-0">
+                Le rôle sélectionné associe cet utilisateur au groupe de permissions correspondant.
+                Exécutez <code>python manage.py init_roles</code> après les migrations pour initialiser ces groupes.
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-end gap-2">
+            <a href="{% url 'utilisateur_list' %}" class="btn btn-outline-secondary">Annuler</a>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

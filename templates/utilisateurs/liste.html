@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Utilisateurs{% endblock %}
+{% block page_pretitle %}Administration{% endblock %}
+{% block page_title %}Utilisateurs & rôles{% endblock %}
+
+{% block page_actions %}
+{% if perms.utilisateurs.add_utilisateur %}
+<a href="{% url 'utilisateur_create' %}" class="btn btn-primary">
+    <i class="bi bi-person-plus me-1"></i> Nouvel utilisateur
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card pg-card mb-3">
+    <div class="card-body">
+        <form method="get" class="d-flex gap-2">
+            <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Nom, identifiant ou adresse e-mail">
+            <button type="submit" class="btn btn-outline-primary">Rechercher</button>
+        </form>
+    </div>
+</div>
+<div class="card pg-card">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table pg-table">
+            <thead><tr><th>Utilisateur</th><th>Rôle</th><th>État</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+                {% for utilisateur in page_obj %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ utilisateur.get_full_name|default:utilisateur.username }}</div>
+                        <div class="text-secondary small">{{ utilisateur.username }}{% if utilisateur.email %} · {{ utilisateur.email }}{% endif %}</div>
+                    </td>
+                    <td>{{ utilisateur.get_role_display }}</td>
+                    <td>{% if utilisateur.is_active %}<span class="badge bg-success-lt text-success">Actif</span>{% else %}<span class="badge bg-secondary-lt text-secondary">Désactivé</span>{% endif %}</td>
+                    <td class="text-end">
+                        {% if perms.utilisateurs.change_utilisateur and not utilisateur.is_superuser %}
+                        <div class="btn-list justify-content-end">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'utilisateur_update' utilisateur.pk %}">Modifier</a>
+                            {% if utilisateur != request.user %}
+                            <form method="post" action="{% url 'utilisateur_toggle_actif' utilisateur.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-secondary" type="submit">{% if utilisateur.is_active %}Désactiver{% else %}Activer{% endif %}</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center py-4 text-secondary">Aucun utilisateur trouvé.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer d-flex justify-content-between">
+        <span>Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span>
+        <div class="btn-list">
+            {% if page_obj.has_previous %}<a class="btn btn-sm btn-outline-secondary" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Précédent</a>{% endif %}
+            {% if page_obj.has_next %}<a class="btn btn-sm btn-outline-secondary" href="?q={{ q }}&page={{ page_obj.next_page_number }}">Suivant</a>{% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
